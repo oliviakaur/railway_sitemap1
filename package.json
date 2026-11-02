@@ -1,0 +1,14 @@
+{
+  "name": "csr-vanilla-railway-deployment-bundle",
+  "version": "1.1.0",
+  "private": true,
+  "description": "CSR vanilla Railway.com deployment bundle including zero-dependency Node server for XML sitemap (server.js, public/index.html, railway.json, railway.toml, package.json)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

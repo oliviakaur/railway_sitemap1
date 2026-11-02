@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+<head>
+  <!-- =====================================================================
+       REQUIREMENT 1: MILLISECOND-0 <head> TAG ORDER & PRIORITY #1 FETCH
+       Exact sequence immediately at top of <head>:
+         1. <meta charset="UTF-8">
+         2. <meta name="viewport" ...>
+         3. <title id="page-title">, <link id="canonical-url">, <meta id="meta-robots">, <meta id="meta-seo">
+         4. Max 3 Static Preconnects (bunbunserver.my.id, fonts.googleapis.com, fonts.gstatic.com)
+         5. Static DNS-Prefetch for Image CDNs
+         6. Non-blocking Google Fonts (media="print" onload="this.media='all'")
+         7. Single Head-Level JSON-LD Slots (#json-ld-schema, #json-ld-breadcrumb)
+         8. Synchronous Millisecond-0 <head> Script (Line 1 canonical update + Priority #1 Fetch)
+       ===================================================================== -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Technical Specifications &amp; Diagrams</title>
+  <link id="canonical-url" rel="canonical" href="https://bunbunserver.my.id/">
+  <meta id="meta-robots" name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta id="meta-seo" name="description" content="Verified technical specifications, automotive sensor resistance data, and wiring diagrams.">
+
+  <!-- REQUIREMENT 4: SOCKET POOL DISCIPLINE (EXACTLY 3 STATIC PRECONNECT ORIGINS) -->
+  <link rel="preconnect" href="https://bunbunserver.my.id" crossorigin="anonymous">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+
+  <!-- STATIC DNS-PREFETCH FOR IMAGE CDNs -->
+  <link rel="dns-prefetch" href="https://bunbunserver.my.id">
+  <link rel="dns-prefetch" href="https://i0.wp.com">
+  <link rel="dns-prefetch" href="https://i1.wp.com">
+  <link rel="dns-prefetch" href="https://i2.wp.com">
+  <link rel="dns-prefetch" href="https://blogger.googleusercontent.com">
+  <link rel="dns-prefetch" href="https://lh3.googleusercontent.com">
+
+  <!-- NON-BLOCKING GOOGLE FONTS -->
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+  </noscript>
+
+  <!-- HOMEPAGE PUBSUBHUBBUB HUB & ATOM SYNDICATION LINKS -->
+  <link id="pubsub-hub-link" rel="hub" href="https://pubsubhubbub.appspot.com/">
+  <link id="atom-feed-link" rel="alternate" type="application/atom+xml" title="Atom 1.0 Syndication Feed" href="https://bunbunserver.my.id/atom.xml">
+
+  <!-- REQUIREMENT 2: SINGLE HEAD-LEVEL JSON-LD CONTAINERS (NEVER REPEATED IN BODY) -->
+  <script id="json-ld-schema" type="application/ld+json"></script>
+  <script id="json-ld-breadcrumb" type="application/ld+json"></script>
+
+  <!-- =====================================================================
+       MILLISECOND-0 SYNCHRONOUS <head> SCRIPT:
+       - Line 1: Updates #canonical-url immediately from window.location
+       - Defines loop-proof window.__BUNBUN_IMG_ERR__ inline SVG Data URI fallback
+       - Fires Priority #1 API fetch immediately in <head>
+       - Pre-parses json_sentences & json_images once in <head>
+       - Hydrates #json-ld-schema & #json-ld-breadcrumb directly in <head>
+       ===================================================================== -->
+  <script>
+  (function () {
+    'use strict';
+
+    /* --- LINE 1: Lock Canonical URL & Route State at Millisecond-0 --- */
+    var loc = window.location;
+    var origin = (loc.origin && loc.origin !== 'null') ? loc.origin : (loc.protocol + '//' + (loc.host || 'localhost'));
+    var pathname = loc.pathname || '/';
+    var params = new URLSearchParams(loc.search || '');
+    var rawCategory = (params.get('category') || '').trim().replace(/\.(sqlite|db)$/i, '');
+    var rawSlug = (params.get('slug') || '').trim();
+    var rawPage = (params.get('page') || '').trim().toLowerCase();
+    var rawQuery = (params.get('q') || params.get('keyword') || '').trim();
+
+    var isRootPath = (pathname === '/' || pathname === '/index.html' || pathname === 'srcdoc' || pathname.endsWith('.html'));
+    var viewType = 'home';
+    var canonicalHref = origin + '/';
+
+    if (!isRootPath) {
+      viewType = '404';
+      canonicalHref = origin + pathname + (loc.search || '');
+    } else if (rawPage === 'sitemap') {
+      viewType = 'sitemap';
+      canonicalHref = origin + '/?page=sitemap';
+    } else if (rawCategory && rawSlug) {
+      viewType = 'single';
+      canonicalHref = origin + '/?category=' + encodeURIComponent(rawCategory) + '&slug=' + encodeURIComponent(rawSlug);
+    } else if (rawCategory && !rawSlug) {
+      viewType = 'category';
+      canonicalHref = origin + '/?category=' + encodeURIComponent(rawCategory);
+    } else if (!rawCategory && rawSlug) {
+      viewType = '404';
+      canonicalHref = origin + (loc.search || '/');
+    }
+
+    var canonicalEl = document.getElementById('canonical-url');
+    if (canonicalEl) canonicalEl.setAttribute('href', canonicalHref);
+
+    var atomEl = document.getElementById('atom-feed-link');
+    if (atomEl) atomEl.setAttribute('href', origin + '/atom.xml');
+
+    /* --- REQUIREMENT 3: Loop-Proof Image onerror SVG Data URI Fallback --- */
+    window.__BUNBUN_FALLBACK_SVG__ =
+      'data:image/svg+xml;utf8,' +
+      encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">' +
+        '<rect width="100%" height="100%" fill="#e2e8f0"/>' +
+        '<text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#475569" font-family="sans-serif" font-size="16" font-weight="600">Technical Diagram Unavailable</text>' +
+        '</svg>'
+      );
+
+    function __BUNBUN_IMG_ERR__(imgEl) {
+      if (!imgEl) return;
+      imgEl.onerror = null;
+      if (imgEl.src !== window.__BUNBUN_FALLBACK_SVG__) {
+        imgEl.src = window.__BUNBUN_FALLBACK_SVG__;
+      }
+    }
+    window.__BUNBUN_IMG_ERR__ = __BUNBUN_IMG_ERR__;
+
+    /* --- REQUIREMENT 2: Head-Level Pre-Parser for json_sentences & json_images --- */
+    function preParseArray(rawField) {
+      if (Array.isArray(rawField)) return rawField;
+      if (typeof rawField === 'string' && rawField.trim()) {
+        try {
+          var parsed = JSON.parse(rawField);
+          return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+          return [];
+        }
+      }
+      return [];
+    }
+
+    function normalizeSingleArticle(raw) {
+      if (!raw || typeof raw !== 'object') return null;
+      var sentencesRaw = raw.sentences !== undefined ? raw.sentences : raw.json_sentences;
+      var imagesRaw = raw.images !== undefined ? raw.images : raw.json_images;
+
+      var sentences = preParseArray(sentencesRaw)
+        .map(function (s) { return String(s == null ? '' : s).trim(); })
+        .filter(Boolean);
+
+      var images = preParseArray(imagesRaw)
+        .filter(function (img) { return img && typeof img === 'object' && (img.url || img.thumb); })
+        .map(function (img) {
+          return {
+            keyword: String(img.keyword || raw.keyword || ''),
+            slug: String(img.slug || raw.slug || ''),
+            title: String(img.title || raw.title || 'Technical Diagram'),
+            alt: String(img.alt || img.title || raw.title || 'Technical Diagram'),
+            url: String(img.url || img.thumb || ''),
+            thumb: String(img.thumb || img.url || ''),
+            filetype: String(img.filetype || 'jpg'),
+            source: String(img.source || ''),
+            domain: String(img.domain || ''),
+            width: Number(img.width) > 0 ? Number(img.width) : 600,
+            height: Number(img.height) > 0 ? Number(img.height) : 400
+          };
+        });
+
+      var articleBody = sentences.join(' ');
+      var metaDesc = String(raw.metaDesc || '').trim();
+      if (!metaDesc && articleBody) {
+        metaDesc = articleBody.length > 157 ? articleBody.slice(0, 157) + '...' : articleBody;
+      }
+
+      var catSlug = String(raw.category || rawCategory);
+      var artSlug = String(raw.slug || rawSlug);
+
+      return {
+        id: Number(raw.id || 0),
+        category: catSlug,
+        categoryLabel: String(raw.categoryLabel || catSlug),
+        keyword: String(raw.keyword || ''),
+        slug: artSlug,
+        title: String(raw.title || raw.keyword || artSlug),
+        content: String(raw.content || ''),
+        sentences: sentences,
+        images: images,
+        articleBody: articleBody,
+        imageCount: Number(raw.imageCount != null ? raw.imageCount : images.length),
+        sentenceCount: Number(raw.sentenceCount != null ? raw.sentenceCount : sentences.length),
+        metaDesc: metaDesc,
+        metaKeywords: String(raw.metaKeywords || ''),
+        createdAt: Number(raw.createdAt || 0),
+        updatedAt: Number(raw.updatedAt || 0),
+        canonicalPath: String(raw.canonicalPath || ('/?category=' + encodeURIComponent(catSlug) + '&slug=' + encodeURIComponent(artSlug)))
+      };
+    }
+
+    function toIsoDate(epochSec) {
+      if (!epochSec) return new Date().toISOString();
+      var d = new Date(Number(epochSec) * 1000);
+      return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+    }
+
+    /* --- Head-Level SEO & JSON-LD Mutators (Never Duplicated in Body) --- */
+    function ensureJsonLdSlot(id) {
+      var el = document.getElementById(id);
+      if (!el) {
+        el = document.createElement('script');
+        el.id = id;
+        el.type = 'application/ld+json';
+        document.head.appendChild(el);
+      }
+      return el;
+    }
+
+    function removeHeadJsonLd() {
+      var s1 = document.getElementById('json-ld-schema');
+      if (s1 && s1.parentNode) s1.parentNode.removeChild(s1);
+      var s2 = document.getElementById('json-ld-breadcrumb');
+      if (s2 && s2.parentNode) s2.parentNode.removeChild(s2);
+    }
+
+    function triggerHead404(reasonText) {
+      var baseSiteTitle = (window.__BUNBUN_BOOT__ && window.__BUNBUN_BOOT__.baseTitle) || loc.hostname || 'Technical Reference';
+      document.title = 'Page Not Found - ' + baseSiteTitle;
+
+      var robotsEl = document.getElementById('meta-robots');
+      if (robotsEl) robotsEl.setAttribute('content', 'noindex, nofollow');
+
+      var seoEl = document.getElementById('meta-seo');
+      if (seoEl) seoEl.setAttribute('content', reasonText || 'Requested technical page or category was not found.');
+
+      removeHeadJsonLd();
+    }
+
+    function hydrateHeadSingleArticle(article) {
+      var baseSiteTitle = (window.__BUNBUN_BOOT__ && window.__BUNBUN_BOOT__.baseTitle) || loc.hostname || 'Technical Reference';
+      var fullUrl = origin + article.canonicalPath;
+
+      document.title = article.title + ' - ' + baseSiteTitle;
+      if (canonicalEl) canonicalEl.setAttribute('href', fullUrl);
+
+      var robotsEl = document.getElementById('meta-robots');
+      if (robotsEl) {
+        robotsEl.setAttribute('content', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
+      }
+
+      var seoEl = document.getElementById('meta-seo');
+      if (seoEl) {
+        seoEl.setAttribute('content', article.metaDesc || article.title);
+      }
+
+      var imageObjects = article.images.map(function (img) {
+        return {
+          '@type': 'ImageObject',
+          url: img.url,
+          contentUrl: img.url,
+          name: img.title,
+          caption: img.alt,
+          width: img.width,
+          height: img.height
+        };
+      });
+
+      var articleSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': fullUrl
+        },
+        headline: article.title,
+        description: article.metaDesc,
+        articleSection: article.categoryLabel,
+        keywords: article.metaKeywords || article.keyword,
+        articleBody: article.articleBody,
+        image: imageObjects,
+        datePublished: toIsoDate(article.createdAt),
+        dateModified: toIsoDate(article.updatedAt || article.createdAt),
+        author: {
+          '@type': 'Organization',
+          name: baseSiteTitle,
+          url: origin + '/'
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: baseSiteTitle,
+          url: origin + '/'
+        }
+      };
+
+      var breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Home',
+            item: origin + '/'
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: article.categoryLabel,
+            item: origin + '/?category=' + encodeURIComponent(article.category)
+          },
+          {
+            '@type': 'ListItem',
+            position: 3,
+            name: article.title,
+            item: fullUrl
+          }
+        ]
+      };
+
+      ensureJsonLdSlot('json-ld-schema').textContent = JSON.stringify(articleSchema);
+      ensureJsonLdSlot('json-ld-breadcrumb').textContent = JSON.stringify(breadcrumbSchema);
+    }
+
+    function hydrateHeadHomepage(data, queryStr) {
+      var baseSiteTitle = (window.__BUNBUN_BOOT__ && window.__BUNBUN_BOOT__.baseTitle) || loc.hostname || 'Technical Reference';
+      var fullUrl = origin + '/';
+      document.title = queryStr ? ('Search: ' + queryStr + ' - ' + baseSiteTitle) : baseSiteTitle;
+      if (canonicalEl) canonicalEl.setAttribute('href', fullUrl);
+
+      var robotsEl = document.getElementById('meta-robots');
+      if (robotsEl) {
+        robotsEl.setAttribute('content', queryStr ? 'noindex, follow' : 'index, follow, max-image-preview:large, max-snippet:-1');
+      }
+
+      var seoEl = document.getElementById('meta-seo');
+      if (seoEl) {
+        seoEl.setAttribute(
+          'content',
+          'Verified technical specifications, automotive sensor resistance data, and wiring diagrams on ' + baseSiteTitle + '.'
+        );
+      }
+
+      var articles = (data && Array.isArray(data.articles)) ? data.articles : [];
+      var homeGraph = {
+        '@context': 'https://schema.org',
+        '@graph': [
+          {
+            '@type': 'WebSite',
+            '@id': origin + '/#website',
+            url: origin + '/',
+            name: baseSiteTitle,
+            potentialAction: {
+              '@type': 'SearchAction',
+              target: origin + '/?q={search_term_string}',
+              'query-input': 'required name=search_term_string'
+            }
+          },
+          {
+            '@type': 'ItemList',
+            '@id': origin + '/#itemlist',
+            name: 'Random Technical Specifications',
+            itemListElement: articles.slice(0, 24).map(function (item, idx) {
+              return {
+                '@type': 'ListItem',
+                position: idx + 1,
+                name: item.title,
+                url: origin + (item.url || ('/?category=' + encodeURIComponent(item.category) + '&slug=' + encodeURIComponent(item.slug)))
+              };
+            })
+          }
+        ]
+      };
+
+      ensureJsonLdSlot('json-ld-schema').textContent = JSON.stringify(homeGraph);
+      var bcEl = document.getElementById('json-ld-breadcrumb');
+      if (bcEl && bcEl.parentNode) bcEl.parentNode.removeChild(bcEl);
+    }
+
+    function hydrateHeadCategory(data, categorySlug) {
+      var baseSiteTitle = (window.__BUNBUN_BOOT__ && window.__BUNBUN_BOOT__.baseTitle) || loc.hostname || 'Technical Reference';
+      var label = (data && data.categoryLabel) || categorySlug;
+      var total = (data && data.totalInCategory) || ((data && data.articles && data.articles.length) || 0);
+      var fullUrl = origin + '/?category=' + encodeURIComponent(categorySlug);
+
+      document.title = label + ' Specifications (' + total + ') - ' + baseSiteTitle;
+      if (canonicalEl) canonicalEl.setAttribute('href', fullUrl);
+
+      var robotsEl = document.getElementById('meta-robots');
+      if (robotsEl) robotsEl.setAttribute('content', 'index, follow');
+
+      var seoEl = document.getElementById('meta-seo');
+      if (seoEl) {
+        seoEl.setAttribute(
+          'content',
+          'Browse ' + total + ' technical articles, sensor specs, and wiring diagrams in ' + label + ' on ' + baseSiteTitle + '.'
+        );
+      }
+
+      /* Category Page Spec: 2 Meta Only (meta robots + meta seo), ZERO JSON-LD */
+      removeHeadJsonLd();
+    }
+
+    function hydrateHeadSitemap() {
+      var baseSiteTitle = (window.__BUNBUN_BOOT__ && window.__BUNBUN_BOOT__.baseTitle) || loc.hostname || 'Technical Reference';
+      document.title = 'Sitemap - ' + baseSiteTitle;
+      if (canonicalEl) canonicalEl.setAttribute('href', origin + '/?page=sitemap');
+
+      var robotsEl = document.getElementById('meta-robots');
+      if (robotsEl) robotsEl.setAttribute('content', 'index, follow');
+
+      var seoEl = document.getElementById('meta-seo');
+      if (seoEl) seoEl.setAttribute('content', 'Complete HTML Sitemap directory for ' + baseSiteTitle + '.');
+
+      removeHeadJsonLd();
+    }
+
+    /* --- FIRE PRIORITY #1 API FETCH IMMEDIATELY IN <head> --- */
+    var API_BASE = 'https://bunbunserver.my.id';
+    var baseTitleText = (loc.hostname && loc.hostname !== 'localhost' && loc.hostname !== '127.0.0.1')
+      ? loc.hostname
+      : 'Technical Specifications & Diagrams';
+
+    window.__BUNBUN_BOOT__ = {
+      apiBase: API_BASE,
+      origin: origin,
+      viewType: viewType,
+      category: rawCategory,
+      slug: rawSlug,
+      page: rawPage,
+      query: rawQuery,
+      baseTitle: baseTitleText,
+      preParsed: null,
+      error: null,
+      primaryPromise: null,
+      normalizeSingleArticle: normalizeSingleArticle,
+      hydrateHeadSingleArticle: hydrateHeadSingleArticle,
+      hydrateHeadHomepage: hydrateHeadHomepage,
+      hydrateHeadCategory: hydrateHeadCategory,
+      hydrateHeadSitemap: hydrateHeadSitemap,
+      triggerHead404: triggerHead404
+    };
+
+    function startInitialHeadFetch() {
+      if (viewType === '404') {
+        triggerHead404('The requested URL path or parameters are invalid.');
+        window.__BUNBUN_BOOT__.error = { status: 404, message: 'Invalid URL route or missing required parameters.' };
+        window.__BUNBUN_BOOT__.primaryPromise = Promise.resolve(null);
+        return;
+      }
+
+      var endpointUrl = '';
+      if (viewType === 'single') {
+        endpointUrl = API_BASE + '/api/article?category=' + encodeURIComponent(rawCategory) + '&slug=' + encodeURIComponent(rawSlug);
+      } else if (viewType === 'category') {
+        var catQs = new URLSearchParams({ limit: '24' });
+        if (rawQuery) catQs.set('q', rawQuery);
+        endpointUrl = API_BASE + '/api/category/' + encodeURIComponent(rawCategory) + '?' + catQs.toString();
+      } else if (viewType === 'sitemap') {
+        endpointUrl = API_BASE + '/api/articles/random?limit=60';
+      } else {
+        var homeQs = new URLSearchParams({ limit: '24' });
+        if (rawQuery) homeQs.set('q', rawQuery);
+        endpointUrl = API_BASE + '/api/articles/random?' + homeQs.toString();
+      }
+
+      window.__BUNBUN_BOOT__.primaryPromise = fetch(endpointUrl, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        priority: 'high'
+      })
+        .then(function (res) {
+          if (!res.ok) {
+            var err = new Error('HTTP ' + res.status);
+            err.status = res.status;
+            throw err;
+          }
+          return res.json();
+        })
+        .then(function (rawJson) {
+          if (viewType === 'single') {
+            var parsedArticle = normalizeSingleArticle(rawJson);
+            if (!parsedArticle || !parsedArticle.sentences.length) {
+              var emptyErr = new Error('Article payload empty or invalid');
+              emptyErr.status = 404;
+              throw emptyErr;
+            }
+            window.__BUNBUN_BOOT__.preParsed = parsedArticle;
+            hydrateHeadSingleArticle(parsedArticle);
+            return parsedArticle;
+          } else if (viewType === 'category') {
+            window.__BUNBUN_BOOT__.preParsed = rawJson;
+            hydrateHeadCategory(rawJson, rawCategory);
+            return rawJson;
+          } else if (viewType === 'sitemap') {
+            window.__BUNBUN_BOOT__.preParsed = rawJson;
+            hydrateHeadSitemap();
+            return rawJson;
+          } else {
+            window.__BUNBUN_BOOT__.preParsed = rawJson;
+            hydrateHeadHomepage(rawJson, rawQuery);
+            return rawJson;
+          }
+        })
+        .catch(function (err) {
+          window.__BUNBUN_BOOT__.viewType = '404';
+          window.__BUNBUN_BOOT__.error = {
+            status: (err && err.status) || 404,
+            message: (err && err.message) || 'Resource not found'
+          };
+          triggerHead404('The requested technical article or category could not be found.');
+          return null;
+        });
+    }
+
+    startInitialHeadFetch();
+  })();
+  </script>
+
+  <!-- =====================================================================
+       MODULE 1: PRE-COMPILED MODULAR CSS ARCHITECTURE
+       Edit `:root` tokens or isolated `.bb-*` component blocks to restyle
+       or redesign the frontend without touching JavaScript logic.
+       ===================================================================== -->
+  <style id="theme-styles">
+    /* --- 1.1 Design Tokens (:root & Dark Mode) --- */
+    :root {
+      --bb-bg-body: #f8fafc;
+      --bb-bg-surface: #ffffff;
+      --bb-bg-subtle: #f1f5f9;
+      --bb-bg-accent-soft: #eff6ff;
+      --bb-text-primary: #0f172a;
+      --bb-text-secondary: #334155;
+      --bb-text-muted: #64748b;
+      --bb-accent: #2563eb;
+      --bb-accent-hover: #1d4ed8;
+      --bb-border: #e2e8f0;
+      --bb-danger: #dc2626;
+      --bb-danger-soft: #fef2f2;
+
+      --bb-font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bb-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+      --bb-container-max: 1160px;
+      --bb-article-max: 860px;
+      --bb-radius-sm: 6px;
+      --bb-radius-md: 10px;
+      --bb-radius-lg: 14px;
+      --bb-radius-pill: 9999px;
+      --bb-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+      --bb-shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+      --bb-transition: 150ms ease;
+    }
+
+    html[data-theme="dark"] {
+      --bb-bg-body: #0b0f19;
+      --bb-bg-surface: #111827;
+      --bb-bg-subtle: #1e293b;
+      --bb-bg-accent-soft: #1e3a8a;
+      --bb-text-primary: #f8fafc;
+      --bb-text-secondary: #cbd5e1;
+      --bb-text-muted: #94a3b8;
+      --bb-accent: #3b82f6;
+      --bb-accent-hover: #60a5fa;
+      --bb-border: #1e293b;
+    }
+
+    /* --- 1.2 Base Reset --- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bb-bg-body);
+      color: var(--bb-text-primary);
+      font-family: var(--bb-font-sans);
+      font-size: 1rem;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      color: var(--bb-accent);
+      text-decoration: none;
+      transition: color var(--bb-transition);
+    }
+
+    a:hover {
+      color: var(--bb-accent-hover);
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* --- 1.3 Pre-Compiled Utility Classes --- */
+    .u-hidden { display: none !important; }
+    .u-flex { display: flex; }
+    .u-flex-wrap { flex-wrap: wrap; }
+    .u-items-center { align-items: center; }
+    .u-justify-between { justify-content: space-between; }
+    .u-gap-xs { gap: 0.375rem; }
+    .u-gap-sm { gap: 0.75rem; }
+    .u-gap-md { gap: 1.25rem; }
+    .u-mt-md { margin-top: 1.25rem; }
+    .u-mt-lg { margin-top: 2rem; }
+    .u-mb-sm { margin-bottom: 0.75rem; }
+    .u-mb-md { margin-bottom: 1.25rem; }
+    .u-text-xs { font-size: 0.75rem; }
+    .u-text-sm { font-size: 0.875rem; }
+    .u-text-muted { color: var(--bb-text-muted); }
+    .u-font-bold { font-weight: 700; }
+    .u-font-mono { font-family: var(--bb-font-mono); }
+
+    /* --- 1.4 Layout Containers --- */
+    .bb-container {
+      width: 100%;
+      max-width: var(--bb-container-max);
+      margin: 0 auto;
+      padding: 0 1.25rem;
+    }
+
+    .bb-container--narrow {
+      max-width: var(--bb-article-max);
+    }
+
+    .bb-main {
+      flex: 1;
+      padding: 2rem 0 3.5rem;
+    }
+
+    /* --- 1.5 Component: Header & Search Bar --- */
+    .bb-header {
+      background: var(--bb-bg-surface);
+      border-bottom: 1px solid var(--bb-border);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: var(--bb-shadow-sm);
+    }
+
+    .bb-header__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 0;
+    }
+
+    .bb-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--bb-text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .bb-brand__badge {
+      background: var(--bb-accent);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.15rem 0.45rem;
+      border-radius: var(--bb-radius-sm);
+      text-transform: uppercase;
+    }
+
+    .bb-search {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      flex: 1;
+      max-width: 400px;
+    }
+
+    .bb-search__input {
+      width: 100%;
+      padding: 0.45rem 0.85rem;
+      border: 1px solid var(--bb-border);
+      border-radius: var(--bb-radius-pill);
+      background: var(--bb-bg-subtle);
+      color: var(--bb-text-primary);
+      font-size: 0.875rem;
+      outline: none;
+    }
+
+    .bb-search__input:focus {
+      border-color: var(--bb-accent);
+      background: var(--bb-bg-surface);
+    }
+
+    .bb-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.45rem 0.95rem;
+      border-radius: var(--bb-radius-pill);
+      border: 1px solid transparent;
+      background: var(--bb-accent);
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .bb-btn:hover {
+      background: var(--bb-accent-hover);
+      color: #ffffff;
+    }
+
+    .bb-btn--outline {
+      background: transparent;
+      border-color: var(--bb-border);
+      color: var(--bb-text-secondary);
+    }
+
+    .bb-btn--outline:hover {
+      background: var(--bb-bg-subtle);
+      color: var(--bb-text-primary);
+    }
+
+    /* --- 1.6 Component: Category Navigation Bar (Hidden on Single Article Page) --- */
+    .bb-cat-bar {
+      background: var(--bb-bg-surface);
+      border-bottom: 1px solid var(--bb-border);
+      padding: 0.6rem 0;
+    }
+
+    .bb-cat-bar__list {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      overflow-x: auto;
+      list-style: none;
+      scrollbar-width: thin;
+    }
+
+    .bb-cat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: var(--bb-radius-pill);
+      background: var(--bb-bg-subtle);
+      color: var(--bb-text-secondary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .bb-cat-pill:hover,
+    .bb-cat-pill--active {
+      background: var(--bb-bg-accent-soft);
+      color: var(--bb-accent);
+      border-color: var(--bb-accent);
+    }
+
+    /* --- 1.7 Component: Listing Grid & Summary Cards --- */
+    .bb-section-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--bb-border);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .bb-section-header__title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .bb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .bb-card {
+      background: var(--bb-bg-surface);
+      border: 1px solid var(--bb-border);
+      border-radius: var(--bb-radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--bb-shadow-sm);
+      transition: transform var(--bb-transition), box-shadow var(--bb-transition), border-color var(--bb-transition);
+    }
+
+    .bb-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--bb-shadow-md);
+      border-color: var(--bb-accent);
+    }
+
+    .bb-card__media {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      background: var(--bb-bg-subtle);
+      overflow: hidden;
+    }
+
+    .bb-card__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .bb-card__badge {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      background: rgba(15, 23, 42, 0.85);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: var(--bb-radius-sm);
+    }
+
+    .bb-card__body {
+      padding: 1.1rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .bb-card__title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.35;
+      margin-bottom: 0.45rem;
+    }
+
+    .bb-card__title a {
+      color: var(--bb-text-primary);
+    }
+
+    .bb-card__title a:hover {
+      color: var(--bb-accent);
+    }
+
+    .bb-card__excerpt {
+      font-size: 0.875rem;
+      color: var(--bb-text-secondary);
+      margin-bottom: 1rem;
+      flex: 1;
+    }
+
+    .bb-card__footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--bb-text-muted);
+      padding-top: 0.6rem;
+      border-top: 1px solid var(--bb-border);
+    }
+
+    /* --- 1.8 Component: Single Article View & Technical Figures --- */
+    .bb-breadcrumbs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      color: var(--bb-text-muted);
+      margin-bottom: 1.25rem;
+      list-style: none;
+    }
+
+    .bb-article {
+      background: var(--bb-bg-surface);
+      border: 1px solid var(--bb-border);
+      border-radius: var(--bb-radius-lg);
+      padding: 2rem;
+      box-shadow: var(--bb-shadow-sm);
+    }
+
+    .bb-article__header {
+      margin-bottom: 1.75rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--bb-border);
+    }
+
+    .bb-article__h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      margin: 0.6rem 0 0.85rem;
+    }
+
+    .bb-article__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--bb-text-muted);
+    }
+
+    .bb-article__meta-chip {
+      background: var(--bb-bg-subtle);
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--bb-radius-sm);
+    }
+
+    .bb-article__sentences p {
+      margin-bottom: 1.1rem;
+      font-size: 1.05rem;
+      color: var(--bb-text-primary);
+    }
+
+    .bb-diagrams-section {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--bb-border);
+    }
+
+    .bb-diagram-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .bb-figure {
+      background: var(--bb-bg-subtle);
+      border: 1px solid var(--bb-border);
+      border-radius: var(--bb-radius-md);
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+
+    .bb-figure__canvas {
+      background: #ffffff;
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--bb-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bb-figure__caption {
+      padding: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--bb-text-secondary);
+    }
+
+    /* --- 1.9 Component: Bottom Deferred Low-Priority Widgets (Requirement 5) --- */
+    .bb-bottom-widgets {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      .bb-bottom-widgets {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .bb-widget-card {
+      background: var(--bb-bg-surface);
+      border: 1px solid var(--bb-border);
+      border-radius: var(--bb-radius-md);
+      padding: 1.25rem;
+      box-shadow: var(--bb-shadow-sm);
+    }
+
+    .bb-widget-card__title {
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 0.85rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--bb-accent);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .bb-widget-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .bb-widget-list__item {
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid var(--bb-border);
+    }
+
+    .bb-widget-list__item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .bb-widget-list__link {
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: block;
+    }
+
+    /* --- 1.10 Component: 404 Box, Skeletons & Footer --- */
+    .bb-404-box {
+      max-width: 620px;
+      margin: 2.5rem auto;
+      background: var(--bb-bg-surface);
+      border: 1px solid var(--bb-border);
+      border-radius: var(--bb-radius-lg);
+      padding: 2.5rem 1.75rem;
+      text-align: center;
+      box-shadow: var(--bb-shadow-md);
+    }
+
+    .bb-404-box__badge {
+      display: inline-block;
+      background: var(--bb-danger-soft);
+      color: var(--bb-danger);
+      font-family: var(--bb-font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.25rem 0.75rem;
+      border-radius: var(--bb-radius-pill);
+      margin-bottom: 0.75rem;
+    }
+
+    .bb-skeleton {
+      background: var(--bb-bg-subtle);
+      border-radius: var(--bb-radius-md);
+      min-height: 220px;
+      border: 1px solid var(--bb-border);
+    }
+
+    .bb-footer {
+      background: var(--bb-bg-surface);
+      border-top: 1px solid var(--bb-border);
+      padding: 1.5rem 0;
+      font-size: 0.85rem;
+      color: var(--bb-text-muted);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- =====================================================================
+       MODULE 2: SEMANTIC HTML SHELL (HEADER, CATEGORY BAR, VIEWPORT, FOOTER)
+       ===================================================================== -->
+  <header class="bb-header" role="banner">
+    <div class="bb-container bb-header__inner">
+      <a class="bb-brand" data-bb-nav="true" data-route="/" href="#">
+        <span class="bb-brand__badge">SPEC</span>
+        <span id="bb-site-name">Technical Reference</span>
+      </a>
+
+      <form class="bb-search" id="bb-search-form" role="search">
+        <input aria-label="Search technical specifications" class="bb-search__input" id="bb-search-input" name="q" placeholder="Search specs, sensors, diagrams..." type="search">
+        <button class="bb-btn" type="submit">Search</button>
+      </form>
+
+      <div class="u-flex u-items-center u-gap-xs">
+        <a class="bb-btn bb-btn--outline" data-bb-nav="true" data-route="/?page=sitemap" href="#">Sitemap</a>
+        <button aria-label="Toggle dark mode" class="bb-btn bb-btn--outline" id="bb-theme-btn" type="button">Theme</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Category Navigation Bar (Rendered on Homepage, Category, Sitemap; Hidden on Single Article & 404) -->
+  <nav aria-label="Category Directory" class="bb-cat-bar u-hidden" id="bb-category-bar">
+    <div class="bb-container">
+      <ul class="bb-cat-bar__list" id="bb-category-list"></ul>
+    </div>
+  </nav>
+
+  <!-- Main Dynamic Viewport -->
+  <main class="bb-main" id="bb-main-root" role="main">
+    <div class="bb-container" id="bb-viewport">
+      <div aria-busy="true" class="bb-grid">
+        <div class="bb-skeleton"></div>
+        <div class="bb-skeleton"></div>
+        <div class="bb-skeleton"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Site Footer (No Footprint, No Sitemap.xml Link) -->
+  <footer class="bb-footer" role="contentinfo">
+    <div class="bb-container u-flex u-flex-wrap u-items-center u-justify-between u-gap-md">
+      <div>
+        <strong id="bb-footer-brand">Technical Reference</strong>
+      </div>
+      <div class="u-flex u-flex-wrap u-gap-md">
+        <a data-bb-nav="true" data-route="/" href="#">Home</a>
+        <a data-bb-nav="true" data-route="/?page=sitemap" href="#">Sitemap</a>
+        <a id="bb-footer-atom-xml" rel="alternate" type="application/atom+xml" href="https://bunbunserver.my.id/atom.xml">Atom.xml</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =====================================================================
+       MODULE 3: MODULAR UI TEMPLATES & ROUTER CONTROLLER
+       Consumes `window.__BUNBUN_BOOT__` pre-parsed in <head>.
+       ===================================================================== -->
+  <script>
+  (function () {
+    'use strict';
+
+    var BOOT = window.__BUNBUN_BOOT__;
+    var API_BASE = BOOT.apiBase;
+
+    function esc(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatDate(sec) {
+      if (!sec) return '';
+      var d = new Date(Number(sec) * 1000);
+      return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+    }
+
+    /* --- Synchronize Brand Name & Progressive-Enhance Static Route Hrefs --- */
+    function hydrateStaticShellLinks() {
+      var siteBrand = BOOT.baseTitle || 'Technical Reference';
+      var brandEl = document.getElementById('bb-site-name');
+      if (brandEl) brandEl.textContent = siteBrand;
+      var footerBrandEl = document.getElementById('bb-footer-brand');
+      if (footerBrandEl) footerBrandEl.textContent = siteBrand;
+
+      var footerAtom = document.getElementById('bb-footer-atom-xml');
+      if (footerAtom) footerAtom.setAttribute('href', BOOT.origin + '/atom.xml');
+
+      var routeLinks = document.querySelectorAll('a[data-route]');
+      routeLinks.forEach(function (a) {
+        var r = a.getAttribute('data-route');
+        if (r) a.setAttribute('href', r);
+      });
+    }
+
+    /* --- Category Bar Visibility & Rendering (NEVER shown on Single Article Page) --- */
+    function hideCategoryBar() {
+      var bar = document.getElementById('bb-category-bar');
+      if (bar) bar.classList.add('u-hidden');
+      var list = document.getElementById('bb-category-list');
+      if (list) list.innerHTML = '';
+    }
+
+    function renderCategoryBar(categories, activeCat) {
+      var bar = document.getElementById('bb-category-bar');
+      var list = document.getElementById('bb-category-list');
+      if (!bar || !list || !Array.isArray(categories) || categories.length === 0) return;
+
+      bar.classList.remove('u-hidden');
+      var html = [
+        '<li><a class="bb-cat-pill ' + (!activeCat || activeCat === 'all' ? 'bb-cat-pill--active' : '') + '" data-bb-nav="true" data-route="/" href="/">All Categories</a></li>'
+      ];
+      categories.forEach(function (c) {
+        var active = c.category === activeCat ? 'bb-cat-pill--active' : '';
+        var route = '/?category=' + encodeURIComponent(c.category);
+        html.push(
+          '<li><a class="bb-cat-pill ' + active + '" data-bb-nav="true" data-route="' + esc(route) + '" href="' + esc(route) + '">' +
+          esc(c.label || c.category) + ' <span class="u-text-xs u-text-muted">(' + Number(c.count || 0) + ')</span></a></li>'
+        );
+      });
+      list.innerHTML = html.join('');
+    }
+
+    /* --- Modular Template Registry (`window.BB_TEMPLATES`) --- */
+    var BB_TEMPLATES = {
+      renderCard: function (card, idx) {
+        var href = card.url || ('/?category=' + encodeURIComponent(card.category) + '&slug=' + encodeURIComponent(card.slug));
+        var imgSrc = card.thumbnail || card.image || window.__BUNBUN_FALLBACK_SVG__;
+        var loadingMode = idx < 6 ? 'eager' : 'lazy';
+        var dateStr = formatDate(card.updatedAt || card.createdAt);
+
+        return (
+          '<article class="bb-card">' +
+            '<a class="bb-card__media" data-bb-nav="true" data-route="' + esc(href) + '" href="' + esc(href) + '">' +
+              '<img alt="' + esc(card.imageAlt || card.title) + '" class="bb-card__img" decoding="async" loading="' + loadingMode + '" onerror="window.__BUNBUN_IMG_ERR__(this)" src="' + esc(imgSrc) + '" width="600" height="400">' +
+              '<span class="bb-card__badge">' + esc(card.categoryLabel || card.category) + '</span>' +
+            '</a>' +
+            '<div class="bb-card__body">' +
+              '<h2 class="bb-card__title"><a data-bb-nav="true" data-route="' + esc(href) + '" href="' + esc(href) + '">' + esc(card.title) + '</a></h2>' +
+              '<p class="bb-card__excerpt">' + esc(card.excerpt || '') + '</p>' +
+              '<div class="bb-card__footer">' +
+                '<span>' + Number(card.sentenceCount || 0) + ' specs &#183; ' + Number(card.imageCount || 0) + ' images</span>' +
+                '<time datetime="' + esc(dateStr) + '">' + esc(dateStr) + '</time>' +
+              '</div>' +
+            '</div>' +
+          '</article>'
+        );
+      },
+
+      renderListingPage: function (viewport, title, subtitle, articles) {
+        viewport.className = 'bb-container';
+        if (!Array.isArray(articles) || articles.length === 0) {
+          viewport.innerHTML =
+            '<div class="bb-404-box">' +
+              '<span class="bb-404-box__badge">0 RESULTS</span>' +
+              '<h1 class="u-mb-sm">No Matching Technical Articles</h1>' +
+              '<p class="u-text-muted u-mb-md">Try clearing your search query or browsing all categories.</p>' +
+              '<a class="bb-btn" data-bb-nav="true" data-route="/" href="/">Back to Homepage</a>' +
+            '</div>';
+          return;
+        }
+
+        viewport.innerHTML =
+          '<section class="bb-section-header">' +
+            '<h1 class="bb-section-header__title">' + esc(title) + '</h1>' +
+            '<span class="u-text-sm u-text-muted">' + esc(subtitle) + '</span>' +
+          '</section>' +
+          '<div class="bb-grid">' +
+            articles.map(function (item, idx) { return BB_TEMPLATES.renderCard(item, idx); }).join('') +
+          '</div>';
+      },
+
+      renderSingleArticlePage: function (viewport, article) {
+        hideCategoryBar();
+        viewport.className = 'bb-container bb-container--narrow';
+
+        var pubDate = formatDate(article.createdAt);
+        var modDate = formatDate(article.updatedAt || article.createdAt);
+        var catHref = '/?category=' + encodeURIComponent(article.category);
+
+        var leadDiagramHtml = '';
+        if (article.images.length > 0) {
+          var firstImg = article.images[0];
+          leadDiagramHtml =
+            '<figure class="bb-figure">' +
+              '<div class="bb-figure__canvas">' +
+                '<img alt="' + esc(firstImg.alt) + '" decoding="async" fetchpriority="high" height="' + firstImg.height + '" loading="eager" onerror="window.__BUNBUN_IMG_ERR__(this)" src="' + esc(firstImg.url) + '" width="' + firstImg.width + '">' +
+              '</div>' +
+              '<figcaption class="bb-figure__caption">' +
+                '<strong>' + esc(firstImg.title) + '</strong> &#8212; ' + firstImg.width + 'x' + firstImg.height + 'px (' + esc(firstImg.filetype.toUpperCase()) + ')' +
+              '</figcaption>' +
+            '</figure>';
+        }
+
+        var sentencesHtml = article.sentences
+          .map(function (sentence) {
+            return '<p>' + esc(sentence) + '</p>';
+          })
+          .join('');
+
+        /* Eagerly render all technical diagrams for non-scrolling Googlebot WRS */
+        var galleryHtml = '';
+        if (article.images.length > 1) {
+          var extraFigures = article.images.slice(1).map(function (img) {
+            return (
+              '<figure class="bb-figure">' +
+                '<div class="bb-figure__canvas">' +
+                  '<img alt="' + esc(img.alt) + '" decoding="async" height="' + img.height + '" loading="eager" onerror="window.__BUNBUN_IMG_ERR__(this)" src="' + esc(img.url) + '" width="' + img.width + '">' +
+                '</div>' +
+                '<figcaption class="bb-figure__caption">' +
+                  '<strong>' + esc(img.title) + '</strong> (' + img.width + 'x' + img.height + 'px)' +
+                '</figcaption>' +
+              '</figure>'
+            );
+          }).join('');
+
+          galleryHtml =
+            '<section aria-label="Technical Diagrams" class="bb-diagrams-section">' +
+              '<h2 class="u-mb-sm" style="font-size:1.3rem;font-weight:800;">Technical Diagrams &amp; Schematics (' + article.images.length + ')</h2>' +
+              '<div class="bb-diagram-grid">' + extraFigures + '</div>' +
+            '</section>';
+        }
+
+        viewport.innerHTML =
+          '<nav aria-label="Breadcrumb">' +
+            '<ol class="bb-breadcrumbs">' +
+              '<li><a data-bb-nav="true" data-route="/" href="/">Home</a></li>' +
+              '<li>/</li>' +
+              '<li><a data-bb-nav="true" data-route="' + esc(catHref) + '" href="' + esc(catHref) + '">' + esc(article.categoryLabel) + '</a></li>' +
+              '<li>/</li>' +
+              '<li aria-current="page">' + esc(article.title) + '</li>' +
+            '</ol>' +
+          '</nav>' +
+          '<article class="bb-article">' +
+            '<header class="bb-article__header">' +
+              '<a class="bb-cat-pill bb-cat-pill--active" data-bb-nav="true" data-route="' + esc(catHref) + '" href="' + esc(catHref) + '">' + esc(article.categoryLabel) + '</a>' +
+              '<h1 class="bb-article__h1">' + esc(article.title) + '</h1>' +
+              '<div class="bb-article__meta">' +
+                '<span class="bb-article__meta-chip">Published: ' + esc(pubDate) + '</span>' +
+                '<span class="bb-article__meta-chip">Updated: ' + esc(modDate) + '</span>' +
+                '<span class="bb-article__meta-chip">' + article.sentenceCount + ' Technical Sentences</span>' +
+                '<span class="bb-article__meta-chip">' + article.imageCount + ' Diagrams</span>' +
+              '</div>' +
+            '</header>' +
+            leadDiagramHtml +
+            '<div class="bb-article__sentences">' +
+              sentencesHtml +
+            '</div>' +
+            galleryHtml +
+          '</article>' +
+          /* REQUIREMENT 5: Related Posts & Related Links at the BOTTOM of the page */
+          '<section aria-label="Supplementary Technical Resources" class="bb-bottom-widgets">' +
+            '<div class="bb-widget-card">' +
+              '<h2 class="bb-widget-card__title">' +
+                '<span>Related Posts</span>' +
+                '<span class="u-text-xs u-text-muted">Same Domain (5)</span>' +
+              '</h2>' +
+              '<ul class="bb-widget-list" id="bb-related-posts-slot">' +
+                '<li class="bb-widget-list__item u-text-xs u-text-muted">Loading related posts (low-priority)...</li>' +
+              '</ul>' +
+            '</div>' +
+            '<div class="bb-widget-card">' +
+              '<h2 class="bb-widget-card__title">' +
+                '<span>Related Links</span>' +
+                '<span class="u-text-xs u-text-muted">All Categories &amp; Domains (5)</span>' +
+              '</h2>' +
+              '<ul class="bb-widget-list" id="bb-related-links-slot">' +
+                '<li class="bb-widget-list__item u-text-xs u-text-muted">Loading cross-domain links (low-priority)...</li>' +
+              '</ul>' +
+            '</div>' +
+          '</section>';
+
+        scheduleLowPrioritySingleWidgets(article);
+      },
+
+      renderSitemapPage: function (viewport, data) {
+        viewport.className = 'bb-container';
+        var articles = (data && data.articles) || [];
+        var categories = (data && data.categories) || [];
+        renderCategoryBar(categories, '');
+
+        viewport.innerHTML =
+          '<section class="bb-section-header">' +
+            '<h1 class="bb-section-header__title">Sitemap Directory</h1>' +
+            '<span class="u-text-sm u-text-muted">' + articles.length + ' indexed articles across ' + categories.length + ' categories</span>' +
+          '</section>' +
+          '<div class="bb-grid">' +
+            articles.map(function (a, i) { return BB_TEMPLATES.renderCard(a, i); }).join('') +
+          '</div>';
+      },
+
+      render404Page: function (viewport, errInfo) {
+        hideCategoryBar();
+        BOOT.triggerHead404((errInfo && errInfo.message) || 'Page Not Found');
+        viewport.className = 'bb-container';
+        viewport.innerHTML =
+          '<section class="bb-404-box" role="alert">' +
+            '<span class="bb-404-box__badge">HTTP ' + esc((errInfo && errInfo.status) || 404) + ' &#183; PAGE NOT FOUND</span>' +
+            '<h1 class="u-mb-sm" style="font-size:1.75rem;font-weight:800;">Page Not Found</h1>' +
+            '<p class="u-text-muted u-mb-md">' +
+              esc((errInfo && errInfo.message) || 'The requested technical specification or category does not exist.') +
+            '</p>' +
+            '<div class="u-flex u-justify-between u-gap-sm" style="justify-content:center;">' +
+              '<a class="bb-btn" data-bb-nav="true" data-route="/" href="/">Return to Homepage</a>' +
+              '<a class="bb-btn bb-btn--outline" data-bb-nav="true" data-route="/?page=sitemap" href="/?page=sitemap">View Sitemap</a>' +
+            '</div>' +
+          '</section>';
+      }
+    };
+
+    window.BB_TEMPLATES = BB_TEMPLATES;
+
+    /* --- REQUIREMENT 5: Low-Priority Deferred Fetches for Bottom Single-Page Widgets --- */
+    function scheduleLowPrioritySingleWidgets(article) {
+      var deferFn = window.requestIdleCallback || function (cb) { return setTimeout(cb, 200); };
+      deferFn(function () {
+        var lowInit = {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          priority: 'low'
+        };
+
+        /* 1. Related Posts: GET /api/articles/random?limit=5 (global databases random, same domain links) */
+        fetch(API_BASE + '/api/articles/random?limit=5', lowInit)
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (data) {
+            var slot = document.getElementById('bb-related-posts-slot');
+            if (!slot) return;
+            var list = ((data && data.articles) || []).filter(function (a) { return a && a.slug !== article.slug; }).slice(0, 5);
+            if (!list.length) {
+              slot.innerHTML = '<li class="bb-widget-list__item u-text-xs u-text-muted">No additional related posts found.</li>';
+              return;
+            }
+            slot.innerHTML = list.map(function (item) {
+              var sameDomainUrl = item.url || ('/?category=' + encodeURIComponent(item.category) + '&slug=' + encodeURIComponent(item.slug));
+              return (
+                '<li class="bb-widget-list__item">' +
+                  '<a class="bb-widget-list__link" data-bb-nav="true" data-route="' + esc(sameDomainUrl) + '" href="' + esc(sameDomainUrl) + '">' + esc(item.title) + '</a>' +
+                  '<span class="u-text-xs u-text-muted">' + esc(item.categoryLabel || item.category) + ' &#183; ' + Number(item.sentenceCount || 0) + ' specs</span>' +
+                '</li>'
+              );
+            }).join('');
+          })
+          .catch(function () {});
+
+        /* 2. Related Links: GET /api/articles/random?limit=5 + GET /api/domains/status (all categories & all domains) */
+        Promise.all([
+          fetch(API_BASE + '/api/articles/random?limit=5', lowInit).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+          fetch(API_BASE + '/api/domains/status', lowInit).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        ]).then(function (results) {
+          var slot = document.getElementById('bb-related-links-slot');
+          if (!slot) return;
+          var articlesData = results[0];
+          var domainsData = results[1];
+
+          var rawDomains = (domainsData && Array.isArray(domainsData.activeHttp200Domains)) ? domainsData.activeHttp200Domains : [];
+          var validOrigins = [];
+          rawDomains.forEach(function (d) {
+            var cleaned = String(d || '').trim().replace(/\/+$/, '');
+            if (!cleaned || cleaned.indexOf('*') !== -1) return;
+            if (!/^https?:\/\//i.test(cleaned)) cleaned = 'https://' + cleaned;
+            try {
+              var host = new URL(cleaned).hostname.toLowerCase();
+              if (host !== 'localhost' && host !== '127.0.0.1' && host !== 'bunbunserver.my.id' && validOrigins.indexOf(cleaned) === -1) {
+                validOrigins.push(cleaned);
+              }
+            } catch (e) {}
+          });
+
+          var randomItems = ((articlesData && articlesData.articles) || [])
+            .filter(function (item) { return item && item.slug && item.slug !== article.slug; })
+            .slice(0, 5);
+
+          if (!randomItems.length) {
+            slot.innerHTML = '<li class="bb-widget-list__item u-text-xs u-text-muted">No cross-domain links available.</li>';
+            return;
+          }
+
+          slot.innerHTML = randomItems.map(function (item, idx) {
+            var targetOrigin = validOrigins.length > 0 ? validOrigins[idx % validOrigins.length] : BOOT.origin;
+            var crossUrl = targetOrigin + '/?category=' + encodeURIComponent(item.category) + '&slug=' + encodeURIComponent(item.slug);
+            var hostName = targetOrigin;
+            try { hostName = new URL(targetOrigin).hostname; } catch (e) {}
+            return (
+              '<li class="bb-widget-list__item">' +
+                '<a class="bb-widget-list__link" href="' + esc(crossUrl) + '" rel="noopener" target="_blank">' + esc(item.title) + '</a>' +
+                '<span class="u-text-xs u-text-muted">' + esc(item.categoryLabel || item.category) + ' &#183; ' + esc(hostName) + ' &#8599;</span>' +
+              '</li>'
+            );
+          }).join('');
+        });
+      });
+    }
+
+    /* --- Hydrate Initial View from Head-Level Promise (`window.__BUNBUN_BOOT__`) --- */
+    function mountFromHeadBoot() {
+      var viewport = document.getElementById('bb-viewport');
+      if (!viewport) return;
+
+      var searchInput = document.getElementById('bb-search-input');
+      if (searchInput) searchInput.value = BOOT.query || '';
+
+      BOOT.primaryPromise.then(function (payload) {
+        if (BOOT.viewType === '404' || !payload) {
+          BB_TEMPLATES.render404Page(viewport, BOOT.error || { status: 404, message: 'Resource not found.' });
+          return;
+        }
+
+        if (BOOT.viewType === 'single') {
+          BB_TEMPLATES.renderSingleArticlePage(viewport, payload);
+          return;
+        }
+
+        if (BOOT.viewType === 'category') {
+          var catArticles = payload.articles || [];
+          var catLabel = payload.categoryLabel || BOOT.category;
+          var totalInCat = payload.totalInCategory || catArticles.length;
+          BB_TEMPLATES.renderListingPage(
+            viewport,
+            catLabel + ' Specifications',
+            totalInCat + ' verified articles in category database',
+            catArticles
+          );
+          fetch(API_BASE + '/api/categories', { method: 'GET', headers: { Accept: 'application/json' }, priority: 'low' })
+            .then(function (r) { return r.ok ? r.json() : null; })
+            .then(function (catData) {
+              if (catData && Array.isArray(catData.categories)) {
+                renderCategoryBar(catData.categories, BOOT.category);
+              }
+            })
+            .catch(function () {});
+          return;
+        }
+
+        if (BOOT.viewType === 'sitemap') {
+          BB_TEMPLATES.renderSitemapPage(viewport, payload);
+          return;
+        }
+
+        var homeArticles = payload.articles || [];
+        var homeCategories = payload.categories || [];
+        renderCategoryBar(homeCategories, 'all');
+        BB_TEMPLATES.renderListingPage(
+          viewport,
+          BOOT.query ? ('Search Results: "' + BOOT.query + '"') : 'Global Technical Specifications & Diagrams',
+          homeArticles.length + ' random articles across ' + homeCategories.length + ' databases',
+          homeArticles
+        );
+      });
+    }
+
+    /* --- Client-Side Navigation (SPA PushState Updates) --- */
+    function navigateClientSide(targetHref, pushHistory) {
+      var parsedUrl;
+      try {
+        parsedUrl = new URL(targetHref, BOOT.origin || 'https://localhost');
+      } catch (e) {
+        parsedUrl = { pathname: '/', search: '' };
+      }
+
+      if (pushHistory !== false) {
+        try {
+          window.history.pushState({}, '', targetHref);
+        } catch (e) {}
+      }
+
+      var pathname = parsedUrl.pathname || '/';
+      var params = new URLSearchParams(parsedUrl.search || '');
+      var cat = (params.get('category') || '').trim().replace(/\.(sqlite|db)$/i, '');
+      var slug = (params.get('slug') || '').trim();
+      var page = (params.get('page') || '').trim().toLowerCase();
+      var q = (params.get('q') || params.get('keyword') || '').trim();
+
+      BOOT.category = cat;
+      BOOT.slug = slug;
+      BOOT.page = page;
+      BOOT.query = q;
+      BOOT.error = null;
+
+      var isRootPath = (pathname === '/' || pathname === '/index.html' || pathname.endsWith('.html'));
+      if (!isRootPath) {
+        BOOT.viewType = '404';
+      } else if (page === 'sitemap') {
+        BOOT.viewType = 'sitemap';
+      } else if (cat && slug) {
+        BOOT.viewType = 'single';
+      } else if (cat && !slug) {
+        BOOT.viewType = 'category';
+      } else if (!cat && slug) {
+        BOOT.viewType = '404';
+      } else {
+        BOOT.viewType = 'home';
+      }
+
+      var viewport = document.getElementById('bb-viewport');
+      if (viewport) {
+        viewport.innerHTML = '<div aria-busy="true" class="bb-grid"><div class="bb-skeleton"></div><div class="bb-skeleton"></div><div class="bb-skeleton"></div></div>';
+      }
+
+      if (BOOT.viewType === '404') {
+        BB_TEMPLATES.render404Page(viewport, { status: 404, message: 'Invalid URL path or missing category parameter.' });
+        return;
+      }
+
+      var url = '';
+      if (BOOT.viewType === 'single') {
+        url = API_BASE + '/api/article?category=' + encodeURIComponent(cat) + '&slug=' + encodeURIComponent(slug);
+      } else if (BOOT.viewType === 'category') {
+        var cqs = new URLSearchParams({ limit: '24' });
+        if (q) cqs.set('q', q);
+        url = API_BASE + '/api/category/' + encodeURIComponent(cat) + '?' + cqs.toString();
+      } else if (BOOT.viewType === 'sitemap') {
+        url = API_BASE + '/api/articles/random?limit=60';
+      } else {
+        var hqs = new URLSearchParams({ limit: '24' });
+        if (q) hqs.set('q', q);
+        url = API_BASE + '/api/articles/random?' + hqs.toString();
+      }
+
+      BOOT.primaryPromise = fetch(url, { method: 'GET', headers: { Accept: 'application/json' }, priority: 'high' })
+        .then(function (r) {
+          if (!r.ok) {
+            var e = new Error('HTTP ' + r.status);
+            e.status = r.status;
+            throw e;
+          }
+          return r.json();
+        })
+        .then(function (json) {
+          if (BOOT.viewType === 'single') {
+            var parsed = BOOT.normalizeSingleArticle(json);
+            if (!parsed || !parsed.sentences.length) {
+              var e2 = new Error('Empty article');
+              e2.status = 404;
+              throw e2;
+            }
+            BOOT.hydrateHeadSingleArticle(parsed);
+            return parsed;
+          } else if (BOOT.viewType === 'category') {
+            BOOT.hydrateHeadCategory(json, cat);
+            return json;
+          } else if (BOOT.viewType === 'sitemap') {
+            BOOT.hydrateHeadSitemap();
+            return json;
+          } else {
+            BOOT.hydrateHeadHomepage(json, q);
+            return json;
+          }
+        })
+        .catch(function (err) {
+          BOOT.viewType = '404';
+          BOOT.error = { status: (err && err.status) || 404, message: (err && err.message) || 'Not Found' };
+          return null;
+        });
+
+      mountFromHeadBoot();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function bindInteractions() {
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest('a[data-bb-nav="true"]');
+        if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        var targetRoute = a.getAttribute('data-route') || a.getAttribute('href');
+        if (!targetRoute || targetRoute.indexOf('http') === 0) return;
+        e.preventDefault();
+        navigateClientSide(targetRoute, true);
+      });
+
+      window.addEventListener('popstate', function () {
+        navigateClientSide(window.location.pathname + window.location.search, false);
+      });
+
+      var form = document.getElementById('bb-search-form');
+      if (form) {
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          var input = document.getElementById('bb-search-input');
+          var q = input ? input.value.trim() : '';
+          var next = new URLSearchParams();
+          if (BOOT.viewType === 'category' && BOOT.category) {
+            next.set('category', BOOT.category);
+          }
+          if (q) next.set('q', q);
+          var qs = next.toString();
+          navigateClientSide(qs ? ('/?' + qs) : '/', true);
+        });
+      }
+
+      var themeBtn = document.getElementById('bb-theme-btn');
+      if (themeBtn) {
+        themeBtn.addEventListener('click', function () {
+          var cur = document.documentElement.getAttribute('data-theme');
+          var next = cur === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+        });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () {
+        hydrateStaticShellLinks();
+        bindInteractions();
+        mountFromHeadBoot();
+      });
+    } else {
+      hydrateStaticShellLinks();
+      bindInteractions();
+      mountFromHeadBoot();
+    }
+  })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/luqmanthinkpad/csrnew/gem.js"></script>
+</body>
+</html>

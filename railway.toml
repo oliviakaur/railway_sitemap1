@@ -1,0 +1,13 @@
+# =============================================================================
+# railway.toml — Railway.com Configuration for CSR Vanilla HTML + XML Sitemap
+# =============================================================================
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "node server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
